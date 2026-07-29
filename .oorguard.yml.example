@@ -1,0 +1,27 @@
+# OorGuard — Example Configuration
+# Place this file as .oorguard.yml in your Laravel project root.
+
+# Checks to disable (by check name).
+# Run `oorguard list-checks` to see all available check names.
+disabled_checks: []
+  # - live_exposure_scan
+  # - npm_audit
+  # - composer_audit
+
+# Glob patterns for paths to exclude from scanning.
+# These are relative to the project root.
+ignore_paths: []
+  # - "storage/logs/*"
+  # - "tests/*"
+  # - "*.min.js"
+
+# Minimum severity level to include in reports.
+# Options: critical, high, medium, low, info
+min_severity: info
+
+# Categories to exclude entirely.
+# Run `oorguard list-checks` to see all categories.
+exclude_categories: []
+  # - "Live Exposure"
+  # - "SSR"
+  # - "Livewire"

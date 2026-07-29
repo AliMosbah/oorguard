@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛡️ OorGuard Security Report</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #1e293b;
+            --border: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --critical: #ef4444;
+            --high: #f97316;
+            --medium: #eab308;
+            --low: #3b82f6;
+            --info: #6b7280;
+            --success: #4ade80;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            padding: 2.5rem 2rem;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, #0f2847 50%, var(--bg-secondary) 100%);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--critical), var(--high), var(--medium), var(--low), var(--accent));
+        }
+
+        header h1 {
+            font-size: 2.25rem;
+            color: var(--accent);
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        header .meta {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-top: 0.75rem;
+        }
+
+        header .meta span {
+            display: inline-block;
+            margin: 0 0.5rem;
+        }
+
+        /* Summary */
+        .summary {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 2.5rem;
+        }
+
+        .summary-card {
+            padding: 1rem 1.5rem;
+            background: var(--bg-card);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            text-align: center;
+            min-width: 120px;
+            transition: transform 0.2s;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .summary-card .count {
+            font-size: 2rem;
+            font-weight: 700;
+            display: block;
+            line-height: 1.2;
+        }
+
+        .summary-card .label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .summary-card.critical .count { color: var(--critical); }
+        .summary-card.critical { border-bottom: 3px solid var(--critical); }
+        .summary-card.high .count { color: var(--high); }
+        .summary-card.high { border-bottom: 3px solid var(--high); }
+        .summary-card.medium .count { color: var(--medium); }
+        .summary-card.medium { border-bottom: 3px solid var(--medium); }
+        .summary-card.low .count { color: var(--low); }
+        .summary-card.low { border-bottom: 3px solid var(--low); }
+        .summary-card.info .count { color: var(--info); }
+        .summary-card.info { border-bottom: 3px solid var(--info); }
+
+        /* Alert banner */
+        .alert-banner {
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .alert-banner.danger {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--critical);
+        }
+
+        .alert-banner.success {
+            background: rgba(74, 222, 128, 0.1);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            color: var(--success);
+        }
+
+        /* Package Table */
+        .pkg-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+            font-size: 0.875rem;
+        }
+
+        .pkg-table th, .pkg-table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .pkg-table th {
+            background: rgba(255,255,255,0.03);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .pkg-name { font-weight: 600; color: var(--text-primary); }
+        .pkg-type { color: var(--text-muted); font-size: 0.8rem; }
+        .pkg-table code { font-family: 'SF Mono', monospace; font-size: 0.8rem; color: var(--accent); }
+
+        /* Category sections */
+        .category {
+            margin-bottom: 2rem;
+        }
+
+        .category h2 {
+            color: var(--accent);
+            font-size: 1.25rem;
+            padding: 0.75rem 0;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .category h2 .cat-count {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            padding: 0.1rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Finding cards */
+        .finding {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid var(--border);
+            transition: border-color 0.2s;
+        }
+
+        .finding:hover {
+            border-color: var(--accent);
+        }
+
+        .finding-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.65rem;
+            border-radius: 5px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge.critical { background: var(--critical); }
+        .badge.high { background: var(--high); }
+        .badge.medium { background: var(--medium); }
+        .badge.low { background: var(--low); }
+        .badge.info { background: var(--info); }
+
+        .finding-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        .finding-location {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            margin-left: auto;
+        }
+
+        .finding-desc {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 0.75rem;
+            white-space: pre-line;
+        }
+
+        .finding-rec {
+            color: var(--success);
+            font-size: 0.825rem;
+            white-space: pre-line;
+            padding: 0.5rem 0.75rem;
+            background: rgba(74, 222, 128, 0.05);
+            border-radius: 6px;
+            border-left: 3px solid var(--success);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            header h1 { font-size: 1.5rem; }
+            .summary { gap: 0.5rem; }
+            .summary-card { min-width: 80px; padding: 0.75rem 1rem; }
+            .finding-header { flex-direction: column; align-items: flex-start; }
+            .finding-location { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛡️ OorGuard Security Report</h1>
+            <p class="meta">
+                <span>📁 {{ project_path }}</span>
+                <span>🕐 {{ generated_at }}</span>
+                <span>📊 {{ total_findings }} findings</span>
+            </p>
+        </header>
+
+        <!-- Installed Packages Table (First Item) -->
+        {% if packages %}
+        <div class="category">
+            <h2>📦 Installed Packages & Available Versions <span class="cat-count">{{ packages|length }}</span></h2>
+            <div style="overflow-x:auto;">
+                <table class="pkg-table">
+                    <thead>
+                        <tr>
+                            <th>Package</th>
+                            <th>Type</th>
+                            <th>Installed</th>
+                            <th>Required</th>
+                            <th>Latest Available</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pkg in packages %}
+                        <tr>
+                            <td class="pkg-name">{{ pkg.name }}</td>
+                            <td class="pkg-type">{{ pkg.type }}</td>
+                            <td><code>{{ pkg.installed_version or '—' }}</code></td>
+                            <td><code>{{ pkg.required_version or '—' }}</code></td>
+                            <td><code>{{ pkg.latest_version or pkg.installed_version or '—' }}</code></td>
+                            <td>
+                                {% if pkg.status == 'Outdated' %}
+                                <span class="badge" style="background:var(--high);color:#000;">Outdated</span>
+                                {% else %}
+                                <span class="badge" style="background:var(--success);color:#000;">Up-to-date</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Summary Cards -->
+        <div class="summary">
+            {% for sev in severities %}
+            <div class="summary-card {{ sev|lower }}">
+                <span class="count">{{ counts.get(sev|lower, 0) }}</span>
+                <span class="label">{{ sev }}</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Alert Banner -->
+        {% if has_critical_or_high %}
+        <div class="alert-banner danger">
+            ⚠️ Critical or High severity issues detected — immediate action recommended
+        </div>
+        {% else %}
+        <div class="alert-banner success">
+            ✅ No Critical or High severity issues — looking good!
+        </div>
+        {% endif %}
+
+        <!-- Findings by Category -->
+        {% for category, findings in grouped_findings.items() %}
+        <div class="category">
+            <h2>📂 {{ category }} <span class="cat-count">{{ findings|length }}</span></h2>
+
+            {% for f in findings %}
+            <div class="finding">
+                <div class="finding-header">
+                    <span class="badge {{ f.severity|lower }}">{{ f.severity }}</span>
+                    <span class="finding-title">{{ f.title }}</span>
+                    {% if f.file %}
+                    <span class="finding-location">
+                        {{ f.file }}{% if f.line %}:{{ f.line }}{% endif %}
+                    </span>
+                    {% endif %}
+                </div>
+                <p class="finding-desc">{{ f.description }}</p>
+                <p class="finding-rec">💡 {{ f.recommendation }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+
+        <footer>
+            Generated by <strong>OorGuard</strong> v{{ version }} — Laravel Security Scanner
+        </footer>
+    </div>
+</body>
+</html>
